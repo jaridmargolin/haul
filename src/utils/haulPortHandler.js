@@ -19,11 +19,8 @@ function isPortTaken(port: number) {
         return resolve(true);
       })
       .once('listening', () => {
-        portTester
-          .once('close', () => {
-            resolve(false);
-          })
-          .close();
+        portTester.close();
+        resolve(false);
       })
       .listen(port);
   });
@@ -39,7 +36,7 @@ function killProcess(port: number) {
       ? `netstat -ano | findstr :${port}`
       : `lsof -n -i:${port} | grep LISTEN`;
 
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     /*
      * Find PID that is listening at given port
      */
@@ -74,7 +71,7 @@ function killProcess(port: number) {
       try {
         process.kill(PID);
       } catch (e) {
-        resolve(false);
+        reject(e.toString());
       }
       resolve(true);
     });
